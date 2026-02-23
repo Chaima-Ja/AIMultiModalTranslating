@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+venv-tts/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+uploads/
+outputs/
+*.whl
+*.log
+
+# Local setup scripts (keep local, don't push)
+run_with_tts.sh
+setup_venv_tts.sh
+start_services.sh
+verify_tts.sh
+download_and_install_wheels.sh
+check_status.sh
+install_all_in_venv_tts.sh
+fix_installation.sh
+
+# Local documentation (keep local, don't push)
+SETUP_SUMMARY.md
+STARTUP_INSTRUCTIONS.md
+TRANSLATION_PIPELINE_README.md
+TTS_ALTERNATIVES.md
+TTS_SETUP_COMPLETE.md
+VERSION_COMPATIBILITY.md
+INSTALLATION_TTS.md
+QUICK_START.md
+CONTRIBUTING.md
+CONTRIBUTORS.md
+CONTRIBUTORS.md
+INSTALLATION.md
+
+
+# Environment variables
+.env
+.env.local
+
+# Model files (if cached locally)
+.cache/
+models/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
