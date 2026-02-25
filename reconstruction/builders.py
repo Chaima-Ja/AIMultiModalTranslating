@@ -169,9 +169,14 @@ def rebuild_pdf(
     """
     Rebuild PDF file with translated text using ReportLab.
     
-    Note: This is approximate - background graphics and complex layouts
-    are not reproduced. The output is a clean, readable translated text document.
+    Preserves document structure, text wrapping within bounding boxes, and formatting.
+    Uses absolute positioning to maintain original layout while allowing text to wrap.
     """
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.colors import black
+    from reportlab.lib.enums import TA_LEFT
+    from reportlab.platypus import Paragraph
+    
     # Read original PDF to get page sizes
     page_sizes = []
     with pdfplumber.open(extracted.source_path) as pdf:
@@ -184,12 +189,9 @@ def rebuild_pdf(
         # Default to A4 if no pages found
         page_sizes = [(595, 842)]  # A4 in points
     
-    # Create new PDF with ReportLab
+    # Create new PDF with ReportLab Canvas
     c = canvas.Canvas(output_path, pagesize=page_sizes[0] if page_sizes else letter)
     trans_map = translations
-    
-    current_page = None
-    current_page_num = 0
     
     # Group blocks by page
     blocks_by_page = {}
@@ -198,6 +200,33 @@ def rebuild_pdf(
         if page_num not in blocks_by_page:
             blocks_by_page[page_num] = []
         blocks_by_page[page_num].append(block)
+    
+    # Sort blocks within each page by Y position (top to bottom), then X (left to right)
+    # This ensures we draw them in the correct reading order
+    for page_num in blocks_by_page:
+        blocks_by_page[page_num].sort(key=lambda b: (-b.bbox[1], b.bbox[0]))  # Sort by Y descending (top first), then X
+    
+    # Create paragraph styles for text wrapping
+    styles = getSampleStyleSheet()
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=11,
+        leading=13,
+        alignment=TA_LEFT,
+        textColor=black,
+        wordWrap='CJK',  # Enable word wrapping
+    )
+    
+    header_style = ParagraphStyle(
+        'CustomHeader',
+        parent=styles['Heading1'],
+        fontSize=14,
+        leading=16,
+        alignment=TA_LEFT,
+        textColor=black,
+        wordWrap='CJK',
+    )
     
     # Draw each page
     for page_num in sorted(blocks_by_page.keys()):
@@ -208,9 +237,14 @@ def rebuild_pdf(
         if page_num < len(page_sizes):
             width, height = page_sizes[page_num]
             c.setPageSize((width, height))
+        else:
+            width, height = page_sizes[0] if page_sizes else (595, 842)
+        
+        # Get blocks for this page, already sorted
+        page_blocks = blocks_by_page[page_num]
         
         # Draw blocks for this page
-        for block in blocks_by_page[page_num]:
+        for block in page_blocks:
             translated = trans_map.get(block.block_id, block.text)
             
             if not translated.strip():
@@ -218,21 +252,52 @@ def rebuild_pdf(
             
             # Get bounding box (pdfplumber uses top-left origin)
             x0, y0, x1, y1 = block.bbox
+            block_width = x1 - x0
+            block_height = y1 - y0
             
             # Convert to ReportLab coordinates (bottom-left origin)
             # pdfplumber: (0,0) is top-left, y increases downward
             # ReportLab: (0,0) is bottom-left, y increases upward
-            page_height = page_sizes[page_num][1] if page_num < len(page_sizes) else 842
+            page_height = height
             rl_x = x0
-            rl_y = page_height - y1  # Flip y coordinate
+            rl_y = page_height - y1  # Bottom of the text box
             
-            # Determine font
-            font_name = "Helvetica-Bold" if block.is_header else "Helvetica"
+            # Determine font size and style
             font_size = max(block.font_size, 10)  # Minimum 10pt
+            is_header = block.is_header
             
-            # Draw text
-            c.setFont(font_name, font_size)
-            c.drawString(rl_x, rl_y, translated)
+            # Update styles with block-specific font size
+            if is_header:
+                style = ParagraphStyle(
+                    'BlockHeader',
+                    parent=header_style,
+                    fontSize=font_size,
+                    leading=font_size * 1.2,
+                )
+            else:
+                style = ParagraphStyle(
+                    'BlockNormal',
+                    parent=normal_style,
+                    fontSize=font_size,
+                    leading=font_size * 1.2,
+                )
+            
+            # Escape special characters for ReportLab XML
+            translated_escaped = translated.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            # Preserve explicit line breaks
+            translated_escaped = translated_escaped.replace("\n", "<br/>")
+            
+            # Create paragraph with text wrapping
+            para = Paragraph(translated_escaped, style)
+            
+            # Get the wrapped height of the paragraph
+            # We need to know how much vertical space the text will take
+            para_width = block_width
+            para_height = para.wrap(para_width, page_height)[1]
+            
+            # Draw the paragraph at the correct position
+            # Use absolute positioning but allow text to wrap within the bounding box
+            para.drawOn(c, rl_x, rl_y)
     
     c.save()
     return output_path

@@ -105,11 +105,49 @@ class OllamaTranslator:
             # Extract translated text from response
             translated = data.get("message", {}).get("content", "").strip()
             
-            # Remove any potential explanations or extra text
-            # Sometimes models add commentary, so we take the first substantial line
+            # Remove any potential explanations or commentary from the model
+            # Filter out lines that look like instructions or metadata
             lines = translated.split("\n")
-            if lines:
-                translated = lines[0].strip()
+            filtered_lines = []
+            
+            # Common prefixes that indicate commentary/instructions (not actual translation)
+            commentary_prefixes = [
+                "translation:", "translation :", "here is", "here's", "voici", 
+                "les règles", "the following", "rules:", "règles:",
+                "note:", "note :", "remarque:", "remarque :",
+                "context:", "contexte:", "hint:", "indice:"
+            ]
+            
+            for line in lines:
+                line_stripped = line.strip()
+                if not line_stripped:
+                    # Preserve empty lines (they might be intentional paragraph breaks)
+                    filtered_lines.append("")
+                    continue
+                
+                # Skip lines that look like instructions or commentary
+                line_lower = line_stripped.lower()
+                if any(line_lower.startswith(prefix.lower()) for prefix in commentary_prefixes):
+                    continue
+                
+                # Skip lines that are just metadata keywords
+                if line_lower in ["translation", "traduction", "rules", "règles"]:
+                    continue
+                
+                # Keep the line (it's actual translated content)
+                filtered_lines.append(line_stripped)
+            
+            # Join all non-commentary lines, preserving line breaks and structure
+            if filtered_lines:
+                # Remove leading/trailing empty lines but preserve internal ones
+                while filtered_lines and not filtered_lines[0]:
+                    filtered_lines.pop(0)
+                while filtered_lines and not filtered_lines[-1]:
+                    filtered_lines.pop()
+                translated = "\n".join(filtered_lines)
+            else:
+                # If we filtered everything, use the original (might be all commentary or single line)
+                translated = translated.strip()
             
             return translated if translated else text  # Fallback to original if empty
         

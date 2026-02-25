@@ -87,9 +87,18 @@ def extract_pdf(file_path: str) -> ExtractedDocument:
                 if not para_words:
                     continue
                 
-                # Extract text
-                text = " ".join(w["text"] for w in sorted(para_words, key=lambda w: w["x0"]))
-                text = " ".join(text.split())  # Normalize whitespace
+                # Extract text while preserving line breaks
+                # Build text line by line to maintain structure
+                text_lines = []
+                for line in para_lines:
+                    # Sort words in line by x position (left to right)
+                    sorted_line_words = sorted(line, key=lambda w: w["x0"])
+                    line_text = " ".join(w["text"] for w in sorted_line_words)
+                    if line_text.strip():
+                        text_lines.append(line_text)
+                
+                # Join lines with newlines to preserve structure
+                text = "\n".join(text_lines)
                 
                 if not text.strip():
                     continue

@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+venv-tts/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+uploads/*
+!uploads/.gitkeep
+outputs/*
+!outputs/.gitkeep
+
+# Documentation (keep in image for reference)
+# *.md
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Wheel files (not needed in container)
+*.whl
+
+# Scripts (not needed in container)
+*.sh
+setup_*.sh
+run_*.sh
+start_services.sh
+verify_*.sh
+fix_*.sh
+install_*.sh
+download_*.sh
+check_*.sh
+
+# Setup files
+SETUP_*.md
+INSTALLATION*.md
+TTS_*.md
+VERSION_*.md
+TRANSLATION_*.md
+QUICK_*.md
+STARTUP_*.md
+CONTRIBUTING.md
+CONTRIBUTORS.md
+
+# License (keep it)
+# LICENSE
+
