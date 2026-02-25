@@ -4,8 +4,9 @@ import requests
 import time
 from pathlib import Path
 
-# API base URL
-API_BASE_URL = "http://localhost:8000"
+# API base URL (can be overridden by environment variable)
+import os
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 # Allowed file types
 ALLOWED_TYPES = [

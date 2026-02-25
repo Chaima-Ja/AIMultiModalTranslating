@@ -41,6 +41,33 @@ This project provides a complete translation pipeline that:
 
 ## Quick Start
 
+### Option 1: Docker (Recommended - No Setup Required)
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Chaima-Ja/AIMultiModalTranslating.git
+   cd AIMultiModalTranslating
+   ```
+
+2. **Start Ollama and pull the model:**
+   ```bash
+   ollama serve
+   ollama pull mistral:7b
+   ```
+
+3. **Start the application with Docker:**
+   ```bash
+   docker-compose up --build
+   ```
+
+4. **Access the application:**
+   - Web UI: http://localhost:8501
+   - API: http://localhost:8000
+
+See [DOCKER.md](DOCKER.md) for detailed Docker setup instructions.
+
+### Option 2: Local Installation
+
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/Chaima-Ja/AIMultiModalTranslating.git
@@ -49,9 +76,10 @@ This project provides a complete translation pipeline that:
 
 2. **Install dependencies:**
    ```bash
-   python3.11 -m venv venv
-   source venv/bin/activate
+   python3.11 -m venv venv-tts
+   source venv-tts/bin/activate
    pip install -r requirements.txt
+   pip install -r requirements-optional.txt
    ```
 
 3. **Start Ollama and pull the model:**
@@ -68,6 +96,8 @@ This project provides a complete translation pipeline that:
    # Terminal 2: Web UI
    streamlit run ui.py
    ```
+
+See [INSTALLATION.md](INSTALLATION.md) for detailed installation instructions.
 
 
 

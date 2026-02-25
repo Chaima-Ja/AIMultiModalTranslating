@@ -122,6 +122,18 @@ class TranslationPipeline:
             progress_callback=progress_callback
         )
         
+        # Validate that all blocks were translated
+        missing_translations = []
+        for block in extracted.blocks:
+            if block.block_id not in translations:
+                missing_translations.append(block.block_id)
+                # Use original text as fallback
+                translations[block.block_id] = block.text
+                print(f"Warning: No translation found for block {block.block_id}, using original text")
+        
+        if missing_translations:
+            print(f"Warning: {len(missing_translations)} blocks were not translated. Using original text as fallback.")
+        
         # Generate output path if not provided
         if output_path is None:
             input_stem = Path(input_path).stem
